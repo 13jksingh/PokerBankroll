@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { api } from '../lib/api';
+import { useEditGate } from '../lib/editGate';
+import { isPinError } from '../lib/pin';
 import { validateSession } from '../domain/validation';
 import { buildSessionDetails } from '../domain/standings';
 import { todayIso, formatNet, netClass } from '../lib/format';
@@ -9,6 +11,7 @@ import type { NewResultInput } from '../domain/types';
 
 export default function AddSessionPage() {
   const { data, tableId, refresh, online } = useData();
+  const { requireUnlock, lock } = useEditGate();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const editId = params.get('edit');
@@ -95,6 +98,7 @@ export default function AddSessionPage() {
   async function addGuest() {
     const name = newGuest.trim();
     if (!name) return;
+    if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
@@ -103,7 +107,9 @@ export default function AddSessionPage() {
       setNewGuest('');
       setNets((prev) => ({ ...prev, [playerId]: '' }));
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Failed to add guest.');
+      const msg = e instanceof Error ? e.message : 'Failed to add guest.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -111,6 +117,7 @@ export default function AddSessionPage() {
 
   async function save() {
     if (!validation.ok) return;
+    if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
@@ -133,7 +140,9 @@ export default function AddSessionPage() {
       await refresh();
       navigate('/');
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Failed to save session.');
+      const msg = e instanceof Error ? e.message : 'Failed to save session.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
       setBusy(false);
     }
   }

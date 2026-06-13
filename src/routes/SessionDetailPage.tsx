@@ -3,11 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { buildSessionDetails } from '../domain/standings';
 import { api } from '../lib/api';
+import { useEditGate } from '../lib/editGate';
+import { isPinError } from '../lib/pin';
 import { formatDate, formatNet, netClass } from '../lib/format';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
   const { data, tableId, refresh, online } = useData();
+  const { requireUnlock, lock } = useEditGate();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -33,6 +36,7 @@ export default function SessionDetailPage() {
 
   async function remove() {
     if (!confirm('Delete this session? This cannot be undone.')) return;
+    if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
@@ -40,7 +44,9 @@ export default function SessionDetailPage() {
       await refresh();
       navigate('/history');
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Failed to delete.');
+      const msg = e instanceof Error ? e.message : 'Failed to delete.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
       setBusy(false);
     }
   }

@@ -15,6 +15,31 @@
 var EPSILON = 0.01;
 var MEMBER_THRESHOLD = 5;
 
+/**
+ * Run once from the Apps Script editor to set the editing PIN, e.g.
+ *   setEditPin('1234')
+ * Stored in Script Properties so it never lives in source control.
+ */
+function setEditPin(newPin) {
+  var pin = String(newPin == null ? '' : newPin);
+  if (!/^\d{4}$/.test(pin)) {
+    throw new Error('PIN must be exactly 4 digits.');
+  }
+  PropertiesService.getScriptProperties().setProperty('EDIT_PIN', pin);
+  return 'PIN updated.';
+}
+
+/** Throws unless body.pin matches the configured editing PIN. */
+function assertPin(body) {
+  var expected = PropertiesService.getScriptProperties().getProperty('EDIT_PIN');
+  if (!expected) {
+    throw new Error('Editing PIN is not configured. Run setEditPin() once.');
+  }
+  if (String(body && body.pin) !== String(expected)) {
+    throw new Error('Incorrect PIN.');
+  }
+}
+
 var SCHEMA = {
   Tables: ['tableId', 'name', 'createdAt'],
   Players: ['tableId', 'playerId', 'name', 'status', 'createdAt'],
@@ -107,7 +132,10 @@ function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
     var action = body.action;
+    assertPin(body);
     switch (action) {
+      case 'verifyPin':
+        return ok({ ok: true });
       case 'createTable':
         return ok(createTable(body));
       case 'addPlayer':

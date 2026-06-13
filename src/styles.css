@@ -66,6 +66,9 @@ body {
   z-index: 20;
   padding: 14px 0 10px;
   background: linear-gradient(var(--bg) 70%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .brand {
@@ -1036,3 +1039,60 @@ button.primary,
   font-size: 0.95rem;
   white-space: nowrap;
 }
+
+
+/* ---------- Edit PIN gate ---------- */
+.lock-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.lock-btn.unlocked {
+  border-color: #16a34a;
+  background: #e9f7ee;
+}
+
+.pin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.pin-modal {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+.pin-modal h2 {
+  margin: 0 0 4px;
+}
+.pin-input {
+  width: 100%;
+  margin: 12px 0 4px;
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 12px;
+  padding: 12px 0;
+}
+.pin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.pin-actions button {
+  flex: 1;
+}
+

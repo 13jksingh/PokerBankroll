@@ -1,5 +1,6 @@
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { useData } from './lib/useData';
+import { useEditGate } from './lib/editGate';
 import StandingsPage from './routes/StandingsPage';
 import HistoryPage from './routes/HistoryPage';
 import StatsPage from './routes/StatsPage';
@@ -35,6 +36,7 @@ const NAV = [
 
 export default function App() {
   const { configured, online, fromCache } = useData();
+  const { unlocked, requireUnlock, lock } = useEditGate();
 
   return (
     <div className="app">
@@ -43,6 +45,16 @@ export default function App() {
           <span className="brand-mark">♠</span>
           <span>PokerBankroll</span>
         </NavLink>
+        {configured && (
+          <button
+            type="button"
+            className={`lock-btn ${unlocked ? 'unlocked' : ''}`}
+            onClick={() => (unlocked ? lock() : void requireUnlock())}
+            title={unlocked ? 'Editing unlocked — tap to lock' : 'Locked — tap to enter PIN'}
+          >
+            {unlocked ? '🔓' : '🔒'}
+          </button>
+        )}
       </header>
 
       {!online && (

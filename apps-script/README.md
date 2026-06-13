@@ -34,13 +34,28 @@ Google Sheet. No one needs to log in to view or add results.
    - Open the app, click **+ New table**, name it (e.g. "Friday Game").
    - Add a night under **Add** — enter each player's net; it must balance to zero.
 
+## Editing PIN (required for add / edit / delete)
+Reading is open to anyone with the link, but **all writes require a 4-digit PIN**
+(enforced server-side, so it can't be bypassed from the browser).
+
+Set it once from the Apps Script editor:
+1. Paste a PIN into the function and run it: open `Code.gs`, select the
+   `setEditPin` function, and run `setEditPin('1234')` (replace with your PIN).
+   - Grant permissions if prompted; you should see `PIN updated.` in the log.
+   - Alternatively: **Project Settings → Script Properties → Add** a property
+     named `EDIT_PIN` with your 4-digit value.
+2. Share the PIN only with the people who should be able to record results.
+
+To change the PIN later, run `setEditPin('newpin')` again. No redeploy needed —
+Script Properties are read live. The PIN is never stored in source control.
+
 ## Updating the script later
 After editing `Code.gs`, do **Deploy → Manage deployments → Edit → Version: New version → Deploy**
 so the `/exec` URL serves the new code.
 
 ## Notes
-- "Who has access: Anyone" means anyone with the app/URL can read and write — same trust level as
-  your group chat. A per-table edit passcode can be added later if needed.
+- "Who has access: Anyone" means anyone with the app/URL can **read**. Writes are
+  gated by the 4-digit `EDIT_PIN` above.
 - You can always open the Google Sheet directly to inspect or correct data by hand.
 - Multiple poker tables live in the same sheet (each row carries a `tableId`).
 

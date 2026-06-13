@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useData } from '../lib/useData';
 import { api } from '../lib/api';
+import { useEditGate } from '../lib/editGate';
+import { isPinError } from '../lib/pin';
 import { computeStandings } from '../domain/standings';
 
 export default function PlayersPage() {
   const { data, tableId, refresh, online } = useData();
+  const { requireUnlock, lock } = useEditGate();
   const [newName, setNewName] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -20,6 +23,7 @@ export default function PlayersPage() {
   async function addGuest() {
     const name = newName.trim();
     if (!name) return;
+    if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
@@ -27,7 +31,9 @@ export default function PlayersPage() {
       await refresh();
       setNewName('');
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Failed to add player.');
+      const msg = e instanceof Error ? e.message : 'Failed to add player.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -36,6 +42,7 @@ export default function PlayersPage() {
   async function saveRename(playerId: string) {
     const name = editName.trim();
     if (!name) return;
+    if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
@@ -43,7 +50,9 @@ export default function PlayersPage() {
       await refresh();
       setEditingId(null);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Failed to rename.');
+      const msg = e instanceof Error ? e.message : 'Failed to rename.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
     } finally {
       setBusy(false);
     }

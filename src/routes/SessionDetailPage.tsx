@@ -5,7 +5,12 @@ import { buildSessionDetails } from '../domain/standings';
 import { api } from '../lib/api';
 import { useEditGate } from '../lib/editGate';
 import { isPinError } from '../lib/pin';
-import { formatDate, formatNet, netClass } from '../lib/format';
+import {
+  formatDate,
+  formatNet,
+  netClass,
+  sessionToWhatsApp,
+} from '../lib/format';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
@@ -14,6 +19,7 @@ export default function SessionDetailPage() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (!data || !tableId) return <p className="muted">Loading…</p>;
 
@@ -34,6 +40,9 @@ export default function SessionDetailPage() {
     );
   }
 
+  const ranked = [...session.entries].sort((a, b) => b.net - a.net);
+  const pot = ranked.filter((e) => e.net > 0).reduce((a, e) => a + e.net, 0);
+
   async function remove() {
     if (!confirm('Delete this session? This cannot be undone.')) return;
     if (!(await requireUnlock())) return;
@@ -51,36 +60,76 @@ export default function SessionDetailPage() {
     }
   }
 
+  async function copyResults() {
+    const text = sessionToWhatsApp(
+      session!.date,
+      session!.entries,
+      session!.location || undefined,
+    );
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  }
+
   return (
-    <section>
+    <section className="session-detail">
       <div className="section-head">
-        <h1>{formatDate(session.date)}</h1>
+        <div>
+          <h1>{formatDate(session.date)}</h1>
+          {session.location && <p className="sub">{session.location}</p>}
+        </div>
         <Link className="ghost small" to="/history">
           ← Back
         </Link>
       </div>
 
-      {session.location && <p className="sub">{session.location}</p>}
       {session.notes && <p className="notes">{session.notes}</p>}
 
-      <table className="standings">
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th className="num">Net</th>
-          </tr>
-        </thead>
-        <tbody>
-          {session.entries.map((e) => (
-            <tr key={e.playerId}>
-              <td>{e.name}</td>
-              <td className={`num net ${netClass(e.net)}`}>
-                {formatNet(e.net)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="session-summary">
+        <div className="summary-item">
+          <span className="summary-label">Players</span>
+          <span className="summary-value">{ranked.length}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Pot</span>
+          <span className="summary-value">{formatNet(pot)}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Top</span>
+          <span className="summary-value">{ranked[0]?.name ?? '—'}</span>
+        </div>
+      </div>
+
+      <ul className="result-list">
+        {ranked.map((e, i) => (
+          <li
+            key={e.playerId}
+            className={`result-item ${i === 0 && e.net > 0 ? 'winner' : ''}`}
+          >
+            <span className="result-rank">{i + 1}</span>
+            <span className="result-player">
+              {e.name}
+              {i === 0 && e.net > 0 && <span className="crown"> 🏆</span>}
+            </span>
+            <span className={`result-net net ${netClass(e.net)}`}>
+              {formatNet(e.net)}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <button className="button copy-btn" type="button" onClick={copyResults}>
+        {copied ? '✓ Copied!' : '📋 Copy for WhatsApp'}
+      </button>
 
       <div className="row-actions">
         <Link className="button small" to={`/add?edit=${session.sessionId}`}>

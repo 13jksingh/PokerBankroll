@@ -26,3 +26,34 @@ export function formatDate(iso: string): string {
 export function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+/** ASCII signed amount for plain-text sharing, e.g. +120 or -45. */
+export function signedAscii(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  const abs = Math.abs(rounded);
+  const text = Number.isInteger(abs) ? abs.toString() : abs.toFixed(2);
+  if (rounded > 0) return `+${text}`;
+  if (rounded < 0) return `-${text}`;
+  return '0';
+}
+
+interface ShareEntry {
+  name: string;
+  net: number;
+}
+
+/** Builds the WhatsApp-style scoreboard text for a night (winners first). */
+export function sessionToWhatsApp(
+  date: string,
+  entries: ShareEntry[],
+  location?: string,
+): string {
+  const sorted = [...entries].sort((a, b) => b.net - a.net);
+  const header = `🃏 Poker — ${formatDate(date)}${
+    location ? ` @ ${location}` : ''
+  }`;
+  const lines = sorted.map(
+    (e, i) => `${i === 0 ? '🏆 ' : ''}${e.name}: ${signedAscii(e.net)}`,
+  );
+  return [header, ...lines].join('\n');
+}

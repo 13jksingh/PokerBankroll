@@ -1,0 +1,18 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+coverage
+dev-dist
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Personal WhatsApp chat export (raw private data — not part of the app)
+WhatsApp Chat with*.txt

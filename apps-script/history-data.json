@@ -1,0 +1,701 @@
+{
+  "tableName": "JAcK",
+  "note": "Extracted from 'WhatsApp Chat with JAcK.txt'. The original hand-recorded nightly tallies did not sum to zero, so each night's leftover imbalance has been divided equally among that night's players (integer, largest-remainder) to make every night a true zero-sum game. 'results' are the balanced nets that get uploaded; 'rawResults' preserves the exact numbers from the chat for audit. 13 Jun is intentionally omitted (already in the system).",
+  "nameMap": {
+    "Jassi": "Jaskeerat Singh",
+    "Sidhu": "Anirudh Singh Sidhu",
+    "Kala": "Bhavya Kala",
+    "Adit": "Adit Danewa"
+  },
+  "review": [
+    "17 May: 'Prabhjot -1880' kept as written, but the group's published totals reconcile only if this entry is excluded/relabeled. Confirm whether that was really Prabhjot.",
+    "Tanuja (23 May) and Akash (25 May) and Harshit (07 Jun) appear to be one-time guests."
+  ],
+  "sessions": [
+    {
+      "date": "2026-05-02",
+      "notes": "Night 1",
+      "results": [
+        [
+          "Adit",
+          1556
+        ],
+        [
+          "Sagar",
+          217
+        ],
+        [
+          "Jassi",
+          926
+        ],
+        [
+          "Kamal",
+          -273
+        ],
+        [
+          "Kala",
+          -793
+        ],
+        [
+          "Sidhu",
+          -1633
+        ]
+      ],
+      "rawSum": 200,
+      "rawResults": [
+        [
+          "Adit",
+          1590
+        ],
+        [
+          "Sagar",
+          250
+        ],
+        [
+          "Jassi",
+          960
+        ],
+        [
+          "Kamal",
+          -240
+        ],
+        [
+          "Kala",
+          -760
+        ],
+        [
+          "Sidhu",
+          -1600
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-03",
+      "notes": "",
+      "results": [
+        [
+          "Kamal",
+          386
+        ],
+        [
+          "Jassi",
+          976
+        ],
+        [
+          "Sidhu",
+          -314
+        ],
+        [
+          "Kala",
+          -644
+        ],
+        [
+          "Sagar",
+          -404
+        ]
+      ],
+      "rawSum": 120,
+      "rawResults": [
+        [
+          "Kamal",
+          410
+        ],
+        [
+          "Jassi",
+          1000
+        ],
+        [
+          "Sidhu",
+          -290
+        ],
+        [
+          "Kala",
+          -620
+        ],
+        [
+          "Sagar",
+          -380
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-10",
+      "notes": "",
+      "results": [
+        [
+          "Jassi",
+          1434
+        ],
+        [
+          "Adit",
+          -1625
+        ],
+        [
+          "Yash",
+          -66
+        ],
+        [
+          "Sagar",
+          144
+        ],
+        [
+          "Kala",
+          -335
+        ],
+        [
+          "Kamal",
+          524
+        ],
+        [
+          "Sidhu",
+          -76
+        ]
+      ],
+      "rawSum": 180,
+      "rawResults": [
+        [
+          "Jassi",
+          1460
+        ],
+        [
+          "Adit",
+          -1600
+        ],
+        [
+          "Yash",
+          -40
+        ],
+        [
+          "Sagar",
+          170
+        ],
+        [
+          "Kala",
+          -310
+        ],
+        [
+          "Kamal",
+          550
+        ],
+        [
+          "Sidhu",
+          -50
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-13",
+      "notes": "",
+      "results": [
+        [
+          "Sidhu",
+          -900
+        ],
+        [
+          "Jassi",
+          -490
+        ],
+        [
+          "Kamal",
+          -380
+        ],
+        [
+          "Sagar",
+          970
+        ],
+        [
+          "Kala",
+          400
+        ],
+        [
+          "Yash",
+          400
+        ]
+      ],
+      "rawSum": 240,
+      "rawResults": [
+        [
+          "Sidhu",
+          -860
+        ],
+        [
+          "Jassi",
+          -450
+        ],
+        [
+          "Kamal",
+          -340
+        ],
+        [
+          "Sagar",
+          1010
+        ],
+        [
+          "Kala",
+          440
+        ],
+        [
+          "Yash",
+          440
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-16",
+      "notes": "",
+      "results": [
+        [
+          "Sidhu",
+          1748
+        ],
+        [
+          "Adit",
+          -392
+        ],
+        [
+          "Sagar",
+          -72
+        ],
+        [
+          "Kamal",
+          738
+        ],
+        [
+          "Jassi",
+          -1601
+        ],
+        [
+          "Yash",
+          -421
+        ]
+      ],
+      "rawSum": 610,
+      "rawResults": [
+        [
+          "Sidhu",
+          1850
+        ],
+        [
+          "Adit",
+          -290
+        ],
+        [
+          "Sagar",
+          30
+        ],
+        [
+          "Kamal",
+          840
+        ],
+        [
+          "Jassi",
+          -1500
+        ],
+        [
+          "Yash",
+          -320
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-17",
+      "notes": "Review: Prabhjot entry",
+      "results": [
+        [
+          "Kamal",
+          1360
+        ],
+        [
+          "Ankit",
+          880
+        ],
+        [
+          "Sidhu",
+          560
+        ],
+        [
+          "Prabhjot",
+          -1900
+        ],
+        [
+          "Jassi",
+          -900
+        ]
+      ],
+      "rawSum": 100,
+      "rawResults": [
+        [
+          "Kamal",
+          1380
+        ],
+        [
+          "Ankit",
+          900
+        ],
+        [
+          "Sidhu",
+          580
+        ],
+        [
+          "Prabhjot",
+          -1880
+        ],
+        [
+          "Jassi",
+          -880
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-23",
+      "notes": "",
+      "results": [
+        [
+          "Jassi",
+          210
+        ],
+        [
+          "Sagar",
+          150
+        ],
+        [
+          "Adit",
+          -370
+        ],
+        [
+          "Tanuja",
+          -1050
+        ],
+        [
+          "Sidhu",
+          -1200
+        ],
+        [
+          "Kamal",
+          2260
+        ]
+      ],
+      "rawSum": 300,
+      "rawResults": [
+        [
+          "Jassi",
+          260
+        ],
+        [
+          "Sagar",
+          200
+        ],
+        [
+          "Adit",
+          -320
+        ],
+        [
+          "Tanuja",
+          -1000
+        ],
+        [
+          "Sidhu",
+          -1150
+        ],
+        [
+          "Kamal",
+          2310
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-25",
+      "notes": "",
+      "results": [
+        [
+          "Sagar",
+          634
+        ],
+        [
+          "Yash",
+          34
+        ],
+        [
+          "Kamal",
+          -6
+        ],
+        [
+          "Sidhu",
+          -56
+        ],
+        [
+          "Akash",
+          -606
+        ]
+      ],
+      "rawSum": 430,
+      "rawResults": [
+        [
+          "Sagar",
+          720
+        ],
+        [
+          "Yash",
+          120
+        ],
+        [
+          "Kamal",
+          80
+        ],
+        [
+          "Sidhu",
+          30
+        ],
+        [
+          "Akash",
+          -520
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-26",
+      "notes": "",
+      "results": [
+        [
+          "Adit",
+          1465
+        ],
+        [
+          "Sagar",
+          525
+        ],
+        [
+          "Kamal",
+          445
+        ],
+        [
+          "Sidhu",
+          -695
+        ],
+        [
+          "Yash",
+          -755
+        ],
+        [
+          "Parth",
+          -985
+        ]
+      ],
+      "rawSum": -90,
+      "rawResults": [
+        [
+          "Adit",
+          1450
+        ],
+        [
+          "Sagar",
+          510
+        ],
+        [
+          "Kamal",
+          430
+        ],
+        [
+          "Sidhu",
+          -710
+        ],
+        [
+          "Yash",
+          -770
+        ],
+        [
+          "Parth",
+          -1000
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-30",
+      "notes": "",
+      "results": [
+        [
+          "Adit",
+          1658
+        ],
+        [
+          "Ankit",
+          978
+        ],
+        [
+          "Parth",
+          838
+        ],
+        [
+          "Kamal",
+          -972
+        ],
+        [
+          "Sidhu",
+          -2502
+        ]
+      ],
+      "rawSum": 10,
+      "rawResults": [
+        [
+          "Adit",
+          1660
+        ],
+        [
+          "Ankit",
+          980
+        ],
+        [
+          "Parth",
+          840
+        ],
+        [
+          "Kamal",
+          -970
+        ],
+        [
+          "Sidhu",
+          -2500
+        ]
+      ]
+    },
+    {
+      "date": "2026-06-07",
+      "notes": "",
+      "results": [
+        [
+          "Parth",
+          -4
+        ],
+        [
+          "Harshit",
+          -1164
+        ],
+        [
+          "Prabhjot",
+          -2094
+        ],
+        [
+          "Jassi",
+          1286
+        ],
+        [
+          "Ankit",
+          1976
+        ]
+      ],
+      "rawSum": 120,
+      "rawResults": [
+        [
+          "Parth",
+          20
+        ],
+        [
+          "Harshit",
+          -1140
+        ],
+        [
+          "Prabhjot",
+          -2070
+        ],
+        [
+          "Jassi",
+          1310
+        ],
+        [
+          "Ankit",
+          2000
+        ]
+      ]
+    },
+    {
+      "date": "2026-06-10",
+      "notes": "Game 1 of 2",
+      "results": [
+        [
+          "Jassi",
+          1197
+        ],
+        [
+          "Ankit",
+          108
+        ],
+        [
+          "Prabhjot",
+          -1552
+        ],
+        [
+          "Parth",
+          247
+        ]
+      ],
+      "rawSum": 50,
+      "rawResults": [
+        [
+          "Jassi",
+          1210
+        ],
+        [
+          "Ankit",
+          120
+        ],
+        [
+          "Prabhjot",
+          -1540
+        ],
+        [
+          "Parth",
+          260
+        ]
+      ]
+    },
+    {
+      "date": "2026-06-10",
+      "notes": "Game 2 of 2",
+      "results": [
+        [
+          "Jassi",
+          -1950
+        ],
+        [
+          "Prabhjot",
+          290
+        ],
+        [
+          "Ankit",
+          -1000
+        ],
+        [
+          "Parth",
+          1250
+        ],
+        [
+          "Sagar",
+          1410
+        ]
+      ],
+      "rawSum": 0,
+      "rawResults": [
+        [
+          "Jassi",
+          -1950
+        ],
+        [
+          "Prabhjot",
+          290
+        ],
+        [
+          "Ankit",
+          -1000
+        ],
+        [
+          "Parth",
+          1250
+        ],
+        [
+          "Sagar",
+          1410
+        ]
+      ]
+    }
+  ]
+}

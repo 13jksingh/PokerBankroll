@@ -1,6 +1,6 @@
 {
   "tableName": "JAcK",
-  "note": "Extracted from 'WhatsApp Chat with JAcK.txt'. The original hand-recorded nightly tallies did not sum to zero, so each night's leftover imbalance has been divided equally among that night's players (integer, largest-remainder) to make every night a true zero-sum game. 'results' are the balanced nets that get uploaded; 'rawResults' preserves the exact numbers from the chat for audit. 13 Jun is intentionally omitted (already in the system).",
+  "note": "Extracted from 'WhatsApp Chat with JAcK.txt'. The original hand-recorded nightly tallies did not sum to zero, so each night’s leftover imbalance has been distributed among that night’s players in multiples of 10 (all scores are multiples of 10) to make every night a true zero-sum game. 'results' are the balanced nets that get uploaded; 'rawResults' preserves the exact numbers from the chat for audit. 13 Jun is intentionally omitted (already in the system).",
   "nameMap": {
     "Jassi": "Jaskeerat Singh",
     "Sidhu": "Anirudh Singh Sidhu",
@@ -18,27 +18,27 @@
       "results": [
         [
           "Adit",
-          1556
+          1550
         ],
         [
           "Sagar",
-          217
+          220
         ],
         [
           "Jassi",
-          926
+          920
         ],
         [
           "Kamal",
-          -273
+          -270
         ],
         [
           "Kala",
-          -793
+          -790
         ],
         [
           "Sidhu",
-          -1633
+          -1630
         ]
       ],
       "rawSum": 200,
@@ -75,23 +75,23 @@
       "results": [
         [
           "Kamal",
-          386
+          380
         ],
         [
           "Jassi",
-          976
+          970
         ],
         [
           "Sidhu",
-          -314
+          -310
         ],
         [
           "Kala",
-          -644
+          -640
         ],
         [
           "Sagar",
-          -404
+          -400
         ]
       ],
       "rawSum": 120,
@@ -124,31 +124,31 @@
       "results": [
         [
           "Jassi",
-          1434
+          1430
         ],
         [
           "Adit",
-          -1625
+          -1620
         ],
         [
           "Yash",
-          -66
+          -70
         ],
         [
           "Sagar",
-          144
+          140
         ],
         [
           "Kala",
-          -335
+          -330
         ],
         [
           "Kamal",
-          524
+          520
         ],
         [
           "Sidhu",
-          -76
+          -70
         ]
       ],
       "rawSum": 180,
@@ -246,27 +246,27 @@
       "results": [
         [
           "Sidhu",
-          1748
+          1740
         ],
         [
           "Adit",
-          -392
+          -390
         ],
         [
           "Sagar",
-          -72
+          -70
         ],
         [
           "Kamal",
-          738
+          740
         ],
         [
           "Jassi",
-          -1601
+          -1600
         ],
         [
           "Yash",
-          -421
+          -420
         ]
       ],
       "rawSum": 610,
@@ -409,23 +409,23 @@
       "results": [
         [
           "Sagar",
-          634
+          630
         ],
         [
           "Yash",
-          34
+          30
         ],
         [
           "Kamal",
-          -6
+          -10
         ],
         [
           "Sidhu",
-          -56
+          -50
         ],
         [
           "Akash",
-          -606
+          -600
         ]
       ],
       "rawSum": 430,
@@ -458,27 +458,27 @@
       "results": [
         [
           "Adit",
-          1465
+          1460
         ],
         [
           "Sagar",
-          525
+          520
         ],
         [
           "Kamal",
-          445
+          440
         ],
         [
           "Sidhu",
-          -695
+          -690
         ],
         [
           "Yash",
-          -755
+          -750
         ],
         [
           "Parth",
-          -985
+          -980
         ]
       ],
       "rawSum": -90,
@@ -515,23 +515,23 @@
       "results": [
         [
           "Adit",
-          1658
+          1650
         ],
         [
           "Ankit",
-          978
+          980
         ],
         [
           "Parth",
-          838
+          840
         ],
         [
           "Kamal",
-          -972
+          -970
         ],
         [
           "Sidhu",
-          -2502
+          -2500
         ]
       ],
       "rawSum": 10,
@@ -564,23 +564,23 @@
       "results": [
         [
           "Parth",
-          -4
+          0
         ],
         [
           "Harshit",
-          -1164
+          -1160
         ],
         [
           "Prabhjot",
-          -2094
+          -2090
         ],
         [
           "Jassi",
-          1286
+          1280
         ],
         [
           "Ankit",
-          1976
+          1970
         ]
       ],
       "rawSum": 120,
@@ -613,19 +613,19 @@
       "results": [
         [
           "Jassi",
-          1197
+          1190
         ],
         [
           "Ankit",
-          108
+          110
         ],
         [
           "Prabhjot",
-          -1552
+          -1550
         ],
         [
           "Parth",
-          247
+          250
         ]
       ],
       "rawSum": 50,

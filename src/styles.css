@@ -607,7 +607,7 @@ button.primary,
 
 .result-row {
   display: grid;
-  grid-template-columns: 1fr 130px 44px;
+  grid-template-columns: 1fr 44px 120px 44px;
   align-items: center;
   gap: 10px;
   background: var(--surface);
@@ -644,6 +644,23 @@ button.primary,
 
 .balance-btn:hover {
   background: #a3780a;
+}
+
+.sign-btn {
+  min-height: 40px;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.sign-btn.neg {
+  background: #fdecec;
+  border-color: #e5484d;
+  color: #c62828;
 }
 
 /* Balance summary */
@@ -814,7 +831,7 @@ button.primary,
 /* ---------- Desktop / laptop ---------- */
 @media (min-width: 480px) {
   .result-row {
-    grid-template-columns: 1fr 150px 44px;
+    grid-template-columns: 1fr 44px 140px 44px;
   }
 }
 

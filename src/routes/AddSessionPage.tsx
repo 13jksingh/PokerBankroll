@@ -83,6 +83,16 @@ export default function AddSessionPage() {
     setNets((prev) => ({ ...prev, [playerId]: value }));
   }
 
+  /** Flip the sign of a player's entered amount (+/-). */
+  function toggleSign(playerId: string) {
+    setNets((prev) => {
+      const raw = (prev[playerId] ?? '').trim();
+      if (raw === '' || raw === '-') return prev;
+      const flipped = raw.startsWith('-') ? raw.slice(1) : `-${raw}`;
+      return { ...prev, [playerId]: flipped };
+    });
+  }
+
   /** Fill the single remaining empty player so the night balances to zero. */
   function autoBalance(playerId: string) {
     const others = selectedIds
@@ -235,6 +245,17 @@ export default function AddSessionPage() {
             {selectedIds.map((id) => (
               <div className="result-row" key={id}>
                 <span className="result-name">{nameOf(id)}</span>
+                <button
+                  className={`sign-btn small ${
+                    (nets[id] ?? '').trim().startsWith('-') ? 'neg' : ''
+                  }`}
+                  type="button"
+                  onClick={() => toggleSign(id)}
+                  title="Flip +/−"
+                  aria-label={`Toggle sign for ${nameOf(id)}`}
+                >
+                  ±
+                </button>
                 <input
                   className="net-input"
                   type="number"

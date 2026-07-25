@@ -6,6 +6,7 @@ import HistoryPage from './routes/HistoryPage';
 import StatsPage from './routes/StatsPage';
 import SessionDetailPage from './routes/SessionDetailPage';
 import AddSessionPage from './routes/AddSessionPage';
+import LiveNightPage from './routes/LiveNightPage';
 import PlayersPage from './routes/PlayersPage';
 import TableBar from './components/TableBar';
 
@@ -35,8 +36,15 @@ const NAV = [
 ];
 
 export default function App() {
-  const { configured, online, fromCache } = useData();
+  const { configured, online, fromCache, data, tableId } = useData();
   const { unlocked, requireUnlock, lock } = useEditGate();
+
+  const openSession =
+    data && tableId
+      ? data.sessions.find(
+          (s) => s.tableId === tableId && s.status === 'open',
+        )
+      : undefined;
 
   return (
     <div className="app">
@@ -70,6 +78,15 @@ export default function App() {
         ) : (
           <>
             <TableBar />
+            {openSession && (
+              <NavLink
+                to={`/live/${openSession.sessionId}`}
+                className="banner live-resume"
+              >
+                <span className="live-dot" /> Live night in progress — tap to
+                resume
+              </NavLink>
+            )}
             <Routes>
               <Route path="/" element={<StandingsPage />} />
               <Route path="/history" element={<HistoryPage />} />
@@ -78,6 +95,8 @@ export default function App() {
                 element={<SessionDetailPage />}
               />
               <Route path="/add" element={<AddSessionPage />} />
+              <Route path="/live" element={<LiveNightPage />} />
+              <Route path="/live/:sessionId" element={<LiveNightPage />} />
               <Route path="/stats" element={<StatsPage />} />
               <Route path="/players" element={<PlayersPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

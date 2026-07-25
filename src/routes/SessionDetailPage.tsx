@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { buildSessionDetails } from '../domain/standings';
+import { buildBuyInSummaries } from '../domain/buyins';
 import { api } from '../lib/api';
 import { useEditGate } from '../lib/editGate';
 import { isPinError } from '../lib/pin';
@@ -31,6 +32,11 @@ export default function SessionDetailPage() {
   );
   const session = sessions.find((s) => s.sessionId === sessionId);
 
+  if (session && session.status === 'open') {
+    navigate(`/live/${session.sessionId}`, { replace: true });
+    return null;
+  }
+
   if (!session) {
     return (
       <section>
@@ -42,6 +48,18 @@ export default function SessionDetailPage() {
 
   const ranked = [...session.entries].sort((a, b) => b.net - a.net);
   const pot = ranked.filter((e) => e.net > 0).reduce((a, e) => a + e.net, 0);
+
+  const buyInSummaries = buildBuyInSummaries(
+    data.buyIns,
+    data.players,
+    session.sessionId,
+  );
+  const chipsByPlayer = new Map(
+    data.results
+      .filter((r) => r.sessionId === session.sessionId && r.chips != null)
+      .map((r) => [r.playerId, r.chips as number]),
+  );
+  const hasBuyIns = buyInSummaries.length > 0;
 
   async function remove() {
     if (!confirm('Delete this session? This cannot be undone.')) return;
@@ -130,6 +148,23 @@ export default function SessionDetailPage() {
       <button className="button copy-btn" type="button" onClick={copyResults}>
         {copied ? '✓ Copied!' : '📋 Copy for WhatsApp'}
       </button>
+
+      {hasBuyIns && (
+        <div className="buyin-breakdown">
+          <h2>Buy-ins</h2>
+          <ul className="buyin-detail-list">
+            {buyInSummaries.map((s) => (
+              <li key={s.playerId} className="buyin-detail-row">
+                <span className="result-player">{s.name}</span>
+                <span className="muted">
+                  {s.count}× · {s.totalBuyIn} in
+                </span>
+                <span className="muted">{chipsByPlayer.get(s.playerId) ?? 0} out</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="row-actions">
         <Link className="button small" to={`/add?edit=${session.sessionId}`}>

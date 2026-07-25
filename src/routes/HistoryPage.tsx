@@ -33,9 +33,13 @@ export default function HistoryPage() {
         <ul className="session-list">
           {sessions.map((s) => {
             const top = s.entries[0];
+            const live = s.status === 'open';
             return (
               <li key={s.sessionId}>
-                <Link to={`/history/${s.sessionId}`} className="session-row">
+                <Link
+                  to={live ? `/live/${s.sessionId}` : `/history/${s.sessionId}`}
+                  className="session-row"
+                >
                   <div className="session-main">
                     <span className="session-date">{formatDate(s.date)}</span>
                     {s.location && (
@@ -43,11 +47,19 @@ export default function HistoryPage() {
                     )}
                   </div>
                   <div className="session-meta">
-                    <span className="muted">{s.playerCount} players</span>
-                    {top && (
-                      <span className={`net ${netClass(top.net)}`}>
-                        {top.name} {formatNet(top.net)}
+                    {live ? (
+                      <span className="live-badge">
+                        <span className="live-dot" /> LIVE
                       </span>
+                    ) : (
+                      <>
+                        <span className="muted">{s.playerCount} players</span>
+                        {top && (
+                          <span className={`net ${netClass(top.net)}`}>
+                            {top.name} {formatNet(top.net)}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </Link>

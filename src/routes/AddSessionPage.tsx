@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { api } from '../lib/api';
 import { useEditGate } from '../lib/editGate';
@@ -163,6 +163,12 @@ export default function AddSessionPage() {
   return (
     <section className="add-page">
       <h1>{editing ? 'Edit night' : 'New night'}</h1>
+
+      {!editing && (
+        <Link to="/live" className="live-cta">
+          <span className="live-dot" /> Track buy-ins live instead →
+        </Link>
+      )}
 
       <div className="date-row">
         <input

@@ -21,6 +21,7 @@ export interface Session {
   location: string;
   notes: string;
   createdAt: string;
+  status?: 'open' | 'closed';
 }
 
 export interface Result {
@@ -28,6 +29,17 @@ export interface Result {
   sessionId: string;
   playerId: string;
   net: number;
+  chips?: number | null;
+}
+
+export interface BuyIn {
+  tableId: string;
+  sessionId: string;
+  playerId: string;
+  buyInId: string;
+  amount: number;
+  remark: string;
+  createdAt: string;
 }
 
 export interface Standing {
@@ -50,6 +62,7 @@ export interface Bootstrap {
   players: Player[];
   sessions: Session[];
   results: Result[];
+  buyIns: BuyIn[];
 }
 
 export interface NewResultInput {
@@ -63,4 +76,41 @@ export interface NewSessionInput {
   location: string;
   notes: string;
   results: NewResultInput[];
+}
+
+/** Per-player buy-in rollup for a live session. */
+export interface PlayerBuyInSummary {
+  playerId: string;
+  name: string;
+  count: number;
+  totalBuyIn: number;
+  entries: BuyIn[];
+}
+
+export interface StartSessionPlayerInput {
+  playerId: string;
+  amount?: number;
+  remark?: string;
+}
+
+export interface StartSessionInput {
+  tableId: string;
+  date: string;
+  location: string;
+  notes: string;
+  players: StartSessionPlayerInput[];
+}
+
+export interface CloseSessionInput {
+  tableId: string;
+  sessionId: string;
+  results: Array<{ playerId: string; chips: number }>;
+}
+
+/** One player's settlement line when closing a live night. */
+export interface SettlementLine {
+  playerId: string;
+  chips: number;
+  totalBuyIn: number;
+  net: number;
 }

@@ -28,10 +28,14 @@ interface DataState {
 
 const DataContext = createContext<DataState | null>(null);
 
+function normalize(data: Bootstrap): Bootstrap {
+  return { ...data, buyIns: data.buyIns ?? [] };
+}
+
 function loadCache(): Bootstrap | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? (JSON.parse(raw) as Bootstrap) : null;
+    return raw ? normalize(JSON.parse(raw) as Bootstrap) : null;
   } catch {
     return null;
   }
@@ -80,7 +84,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const fresh = await api.bootstrap();
+      const fresh = normalize(await api.bootstrap());
       setData(fresh);
       setFromCache(false);
       saveCache(fresh);

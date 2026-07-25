@@ -1,7 +1,9 @@
 import type {
   Bootstrap,
+  CloseSessionInput,
   NewSessionInput,
   NewResultInput,
+  StartSessionInput,
 } from '../domain/types';
 import { getConfig } from './config';
 import { getPin } from './pin';
@@ -99,5 +101,45 @@ export const api = {
 
   deleteSession(tableId: string, sessionId: string): Promise<{ ok: true }> {
     return post<{ ok: true }>({ action: 'deleteSession', tableId, sessionId });
+  },
+
+  startSession(input: StartSessionInput): Promise<{ sessionId: string }> {
+    return post<{ sessionId: string }>({ action: 'startSession', ...input });
+  },
+
+  addBuyIn(
+    tableId: string,
+    sessionId: string,
+    playerId: string,
+    amount?: number,
+    remark?: string,
+  ): Promise<{ buyInId: string }> {
+    return post<{ buyInId: string }>({
+      action: 'addBuyIn',
+      tableId,
+      sessionId,
+      playerId,
+      amount,
+      remark,
+    });
+  },
+
+  editBuyIn(
+    buyInId: string,
+    patch: { amount?: number; remark?: string },
+  ): Promise<{ ok: true }> {
+    return post<{ ok: true }>({ action: 'editBuyIn', buyInId, ...patch });
+  },
+
+  deleteBuyIn(buyInId: string): Promise<{ ok: true }> {
+    return post<{ ok: true }>({ action: 'deleteBuyIn', buyInId });
+  },
+
+  closeSession(input: CloseSessionInput): Promise<{ ok: true }> {
+    return post<{ ok: true }>({ action: 'closeSession', ...input });
+  },
+
+  reopenSession(tableId: string, sessionId: string): Promise<{ ok: true }> {
+    return post<{ ok: true }>({ action: 'reopenSession', tableId, sessionId });
   },
 };

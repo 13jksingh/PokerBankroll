@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "api:build": "npm run build --prefix api",
+    "api:test": "npm test --prefix api"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -19,7 +19,7 @@ function apiUrl(): string {
   const { apiUrl } = getConfig();
   if (!apiUrl) {
     throw new Error(
-      'API URL is not configured. Set VITE_API_URL to your Apps Script /exec URL.',
+      'API URL is not configured. Set VITE_API_URL to the deployed backend URL.',
     );
   }
   return apiUrl;

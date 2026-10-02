@@ -17,5 +17,10 @@ export function getConfig(): AppConfig {
 }
 
 export function isConfigured(config: AppConfig): boolean {
-  return Boolean(config.apiUrl) && config.apiUrl.includes('/exec');
+  try {
+    const url = new URL(config.apiUrl);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
 }

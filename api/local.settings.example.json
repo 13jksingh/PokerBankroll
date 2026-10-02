@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "COSMOS_ENDPOINT": "https://your-account.documents.azure.com:443/",
+    "COSMOS_KEY": "use-a-local-secret-only",
+    "COSMOS_DATABASE": "pokerbankroll",
+    "COSMOS_CONTAINER": "data",
+    "EDIT_PIN_HASH": "sha256-hex-of-your-4-digit-pin",
+    "ALLOWED_ORIGINS": "http://localhost:5173"
+  }
+}

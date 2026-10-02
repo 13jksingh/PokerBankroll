@@ -10,6 +10,7 @@ dist-ssr
 !.vscode/extensions.json
 coverage
 dev-dist
+api/local.settings.json
 
 # TypeScript incremental build info
 *.tsbuildinfo

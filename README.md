@@ -1,10 +1,11 @@
 # PokerBankroll
 
 A lightweight, installable PWA to track your weekly poker night and live standings — replacing the
-manual WhatsApp tally. **Anyone in the group can view and add results with no login.** Data lives in
-your own Google Sheet (free, and you can edit it by hand anytime).
+manual WhatsApp tally. **Anyone in the group can view results with no login.** Organizer writes are
+protected by a shared PIN. Data is served by a low-cost Azure Functions API backed by Cosmos DB.
 
 ## Features
+
 - 📊 **Live standings** — cumulative net per player, sorted, with games played.
 - 🗓️ **Session history** — every poker night with per-player results.
 - ➕ **Frictionless add** — pick players, type each net; the app enforces the night **balances to zero**.
@@ -13,45 +14,57 @@ your own Google Sheet (free, and you can edit it by hand anytime).
 - 📱 **Installable PWA** — add to home screen; standings viewable offline.
 
 ## How it works
+
 ```
-PWA (React + Vite + TS)  ──HTTPS/JSON──▶  Google Apps Script web app  ──▶  Google Sheet (DB)
-        static hosting                    (runs as you, open access)        4 tabs
+PWA (React + Vite + TS)  ──HTTPS/JSON──▶  Azure Functions  ──▶  Cosmos DB
+        GitHub Pages                       Flex Consumption     free tier
 ```
-No server you pay for, no per-user login. See [`spec/`](./spec) for full requirements & design.
+
+The API runs on demand and Cosmos uses its lifetime free tier. See [`api/README.md`](./api/README.md)
+for deployment, migration, and rollback details.
 
 ## Setup
 
-### 1. Backend (one-time, ~5 min)
-Follow [`apps-script/README.md`](./apps-script/README.md): create a Google Sheet, paste
-`apps-script/Code.gs`, deploy as a Web App ("Execute as: Me", "Who has access: Anyone"), and copy
-the `/exec` URL.
+### 1. Backend
+
+The production backend is in [`api/`](./api) and runs as an Azure Functions Flex Consumption app.
+Infrastructure can be recreated with [`infra/deploy.ps1`](./infra/deploy.ps1).
 
 ### 2. Frontend
+
 ```bash
 npm install
-cp .env.example .env       # then put your /exec URL in VITE_API_URL
+cp .env.example .env       # then put your Azure /api/poker URL in VITE_API_URL
 npm run dev                # http://localhost:5173
 ```
 
 ### 3. Deploy (free static hosting)
+
 ```bash
 npm run build              # outputs dist/
 ```
+
 Host `dist/` on GitHub Pages, Netlify, or any static host. Share the URL (optionally
 `...?table=<tableId>`) with your group.
 
 ## Scripts
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start the dev server |
-| `npm test` | Run unit tests (domain logic) |
-| `npm run build` | Typecheck + production build (PWA) |
-| `npm run lint` | Lint |
-| `npm run format` | Prettier format |
+
+| Command             | Description                         |
+| ------------------- | ----------------------------------- |
+| `npm run dev`       | Start the dev server                |
+| `npm test`          | Run unit tests (domain logic)       |
+| `npm run build`     | Typecheck + production build (PWA)  |
+| `npm run lint`      | Lint                                |
+| `npm run format`    | Prettier format                     |
+| `npm run api:build` | Typecheck and compile the Azure API |
+| `npm run api:test`  | Run Azure API unit tests            |
 
 ## Project layout
+
 ```
-apps-script/   Google Apps Script backend (Code.gs) + setup guide
+api/           Azure Functions API, Cosmos data access, and migration tooling
+infra/         Reproducible Azure resource provisioning
+apps-script/   Legacy Google Apps Script backend retained for rollback
 spec/          requirements.md, design.md, tasks.md
 src/domain/    pure logic: standings + zero-sum validation (unit-tested)
 src/lib/       config, API client, data provider, formatting
@@ -60,6 +73,7 @@ src/components/ TableBar, etc.
 ```
 
 ## Notes
-- "Open access" matches your group's existing WhatsApp trust level. A per-table edit passcode can be
-  added later if needed (see `spec/requirements.md` §7).
-- The Google Sheet remains the source of truth and is always hand-editable.
+
+- Reads remain open; writes require the organizer PIN.
+- The legacy Google Sheet is retained as a rollback snapshot but is no longer the production source
+  of truth after the Azure cutover.

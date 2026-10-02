@@ -8,6 +8,7 @@ import { validateSession } from '../domain/validation';
 import { buildSessionDetails } from '../domain/standings';
 import { todayIso, formatNet, netClass } from '../lib/format';
 import type { NewResultInput } from '../domain/types';
+import { isWalletTable } from '../domain/wallet';
 
 export default function AddSessionPage() {
   const { data, tableId, refresh, online } = useData();
@@ -53,6 +54,27 @@ export default function AddSessionPage() {
 
   if (!data || !tableId) {
     return <p className="muted">Select a table first.</p>;
+  }
+
+  const table = data.tables.find((candidate) => candidate.tableId === tableId);
+  if (isWalletTable(table)) {
+    return (
+      <section>
+        <h1>{editing ? 'Edit night' : 'New night'}</h1>
+        <div className="empty">
+          <p className="empty-emoji">♠</p>
+          <p>Wallet tables record every night through the live buy-in flow.</p>
+          <p className="muted">
+            This keeps buy-ins, buy outs and wallet balances synchronized.
+          </p>
+          {!editing && (
+            <Link className="button" to="/live">
+              Start live night
+            </Link>
+          )}
+        </div>
+      </section>
+    );
   }
 
   const selectedIds = Object.keys(nets);

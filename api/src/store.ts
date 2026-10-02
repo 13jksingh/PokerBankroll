@@ -4,7 +4,7 @@ import {
   type OperationInput,
   type SqlQuerySpec,
 } from '@azure/cosmos';
-import type { PokerDocument } from './domain.js';
+import { tableDocumentId, type PokerDocument } from './domain.js';
 
 export type BatchOperation =
   | {
@@ -62,6 +62,45 @@ export async function readDocument<T extends PokerDocument>(
   const { resource } = await getContainer().item(id, tableId).read<T>();
   if (!resource) throw new Error('Record not found.');
   return resource;
+}
+
+export async function deletePartition(tableId: string): Promise<void> {
+  const target = getContainer();
+  const tombstoneId = tableDocumentId(tableId);
+  const { resources } = await target.items
+    .query<{ id: string }>(
+      {
+        query:
+          'SELECT c.id FROM c WHERE c.tableId = @tableId AND c.id != @tombstoneId',
+        parameters: [
+          { name: '@tableId', value: tableId },
+          { name: '@tombstoneId', value: tombstoneId },
+        ],
+      },
+      { partitionKey: tableId },
+    )
+    .fetchAll();
+
+  for (let offset = 0; offset < resources.length; offset += 100) {
+    const chunk = resources.slice(offset, offset + 100);
+    const response = await target.items.batch(
+      chunk.map(({ id }) => ({ operationType: 'Delete', id })),
+      tableId,
+    );
+    const status = response.code ?? 500;
+    if (status < 200 || status >= 300) {
+      throw new Error(`Table cleanup failed (${status}).`);
+    }
+  }
+
+  const finalResponse = await target.items.batch(
+    [{ operationType: 'Delete', id: tombstoneId }],
+    tableId,
+  );
+  const finalStatus = finalResponse.code ?? 500;
+  if (finalStatus < 200 || finalStatus >= 300) {
+    throw new Error(`Table cleanup failed (${finalStatus}).`);
+  }
 }
 
 export async function runBatch(

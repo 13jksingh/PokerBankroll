@@ -1,9 +1,12 @@
 import type {
   Bootstrap,
   CloseSessionInput,
+  CreateTableInput,
   NewSessionInput,
   NewResultInput,
   StartSessionInput,
+  Wallet,
+  WalletTransaction,
 } from '../domain/types';
 import { getConfig } from './config';
 import { getPin } from './pin';
@@ -58,11 +61,23 @@ export const api = {
   },
 
   bootstrap(tableId?: string): Promise<Bootstrap> {
-    return get<Bootstrap>(tableId ? { action: 'bootstrap', table: tableId } : { action: 'bootstrap' });
+    return get<Bootstrap>(
+      tableId
+        ? { action: 'bootstrap', table: tableId }
+        : { action: 'bootstrap' },
+    );
   },
 
-  createTable(name: string): Promise<{ tableId: string }> {
-    return post<{ tableId: string }>({ action: 'createTable', name });
+  walletBootstrap(
+    tableId: string,
+  ): Promise<{ wallets: Wallet[]; walletTransactions: WalletTransaction[] }> {
+    return post<{ wallets: Wallet[]; walletTransactions: WalletTransaction[] }>(
+      { action: 'walletBootstrap', tableId },
+    );
+  },
+
+  createTable(input: CreateTableInput): Promise<{ tableId: string }> {
+    return post<{ tableId: string }>({ action: 'createTable', ...input });
   },
 
   addPlayer(tableId: string, name: string): Promise<{ playerId: string }> {
@@ -74,7 +89,12 @@ export const api = {
     playerId: string,
     name: string,
   ): Promise<{ ok: true }> {
-    return post<{ ok: true }>({ action: 'renamePlayer', tableId, playerId, name });
+    return post<{ ok: true }>({
+      action: 'renamePlayer',
+      tableId,
+      playerId,
+      name,
+    });
   },
 
   addSession(input: NewSessionInput): Promise<{ sessionId: string }> {
@@ -108,6 +128,7 @@ export const api = {
   },
 
   addBuyIn(
+    operationId: string,
     tableId: string,
     sessionId: string,
     playerId: string,
@@ -116,6 +137,7 @@ export const api = {
   ): Promise<{ buyInId: string }> {
     return post<{ buyInId: string }>({
       action: 'addBuyIn',
+      operationId,
       tableId,
       sessionId,
       playerId,
@@ -141,5 +163,52 @@ export const api = {
 
   reopenSession(tableId: string, sessionId: string): Promise<{ ok: true }> {
     return post<{ ok: true }>({ action: 'reopenSession', tableId, sessionId });
+  },
+
+  topUpWallet(
+    operationId: string,
+    tableId: string,
+    playerId: string,
+    moneyPaise: number,
+    remark?: string,
+  ): Promise<{ transactionId: string; balance: number }> {
+    return post<{ transactionId: string; balance: number }>({
+      action: 'topUpWallet',
+      operationId,
+      tableId,
+      playerId,
+      moneyPaise,
+      remark,
+    });
+  },
+
+  cashOutWallet(
+    operationId: string,
+    tableId: string,
+    playerId: string,
+    chips: number,
+    remark?: string,
+  ): Promise<{ transactionId: string; balance: number; moneyPaise: number }> {
+    return post<{ transactionId: string; balance: number; moneyPaise: number }>(
+      {
+        action: 'cashOutWallet',
+        operationId,
+        tableId,
+        playerId,
+        chips,
+        remark,
+      },
+    );
+  },
+
+  deleteTable(
+    tableId: string,
+    confirmationName: string,
+  ): Promise<{ ok: true }> {
+    return post<{ ok: true }>({
+      action: 'deleteTable',
+      tableId,
+      confirmationName,
+    });
   },
 };

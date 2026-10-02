@@ -32,8 +32,32 @@ is never stored in Azure.
 ## Data model
 
 All records are stored in one container and partitioned by `tableId`. Document types are `table`,
-`player`, `session`, `result`, and `buyIn`. Mutations affecting multiple documents use Cosmos
-transactional batches within the table partition.
+`player`, `session`, `result`, `buyIn`, `wallet`, and `walletTransaction`. Mutations affecting
+multiple documents use Cosmos transactional batches within the table partition.
+
+Tables opt into either `legacy` or `wallet` mode when created. Existing imported tables have no mode
+and remain legacy. Wallet tables define a constant `chipsPerRupee` and `defaultBuyIn`. A mutable
+wallet balance projection uses optimistic concurrency to prevent overspending, while every movement
+is also appended to the immutable transaction ledger.
+
+Anonymous bootstrap responses intentionally exclude wallet balances and transactions. The frontend
+retrieves them through the PIN-protected `walletBootstrap` action and never persists them to its
+offline cache.
+
+Wallet transaction types:
+
+- `top_up` / `cash_out` for organizer cash movements.
+- `buy_in` / `buy_out` for live-night play.
+- `buy_in_adjustment`, `buy_in_reversal`, `buy_out_reversal`, and `session_reversal` for immutable
+  correction history.
+
+Financial commands use client operation IDs stored as command documents in the same transactional
+batch. Identical retries return the original result; reusing an operation ID with changed inputs is
+rejected.
+
+Table deletion requires the exact table name. The API first marks the table as deleting so all
+concurrent mutations fail their ETag guard, hides the table from bootstrap, deletes other partition
+documents in resumable batches, and removes the tombstone last.
 
 ## Importing an Apps Script export
 

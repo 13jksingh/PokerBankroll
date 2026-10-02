@@ -1,6 +1,7 @@
 import { useData } from '../lib/useData';
 import { buildSessionMatrix, computePlayerStats } from '../domain/stats';
 import { formatDate, formatNet, netClass } from '../lib/format';
+import PlayersPage from './PlayersPage';
 
 export default function StatsPage() {
   const { data, tableId, loading } = useData();
@@ -34,7 +35,9 @@ export default function StatsPage() {
       ) : (
         <>
           <h2 className="stats-subhead">Session grid</h2>
-          <p className="hint">Each player’s net for every night. Scroll sideways →</p>
+          <p className="hint">
+            Each player’s net for every night. Scroll sideways →
+          </p>
           <div className="matrix-wrap">
             <table className="matrix">
               <thead>
@@ -53,12 +56,16 @@ export default function StatsPage() {
                   <tr key={row.playerId}>
                     <th className="matrix-player" scope="row">
                       <span className="matrix-name">{row.name}</span>
-                      <span className={`badge ${row.status}`}>{row.status}</span>
+                      <span className={`badge ${row.status}`}>
+                        {row.status}
+                      </span>
                     </th>
                     {row.cells.map((cell, i) => (
                       <td
                         key={matrix.columns[i].sessionId}
-                        className={cell === null ? 'matrix-cell no-play' : 'matrix-cell'}
+                        className={
+                          cell === null ? 'matrix-cell no-play' : 'matrix-cell'
+                        }
                       >
                         {cell === null ? (
                           <span className="matrix-dash">·</span>
@@ -107,13 +114,17 @@ export default function StatsPage() {
                   </div>
                   <div className="stat">
                     <span className="stat-label">Best</span>
-                    <span className={`stat-value net ${netClass(s.biggestWin)}`}>
+                    <span
+                      className={`stat-value net ${netClass(s.biggestWin)}`}
+                    >
                       {formatNet(s.biggestWin)}
                     </span>
                   </div>
                   <div className="stat">
                     <span className="stat-label">Worst</span>
-                    <span className={`stat-value net ${netClass(s.biggestLoss)}`}>
+                    <span
+                      className={`stat-value net ${netClass(s.biggestLoss)}`}
+                    >
                       {formatNet(s.biggestLoss)}
                     </span>
                   </div>
@@ -123,6 +134,8 @@ export default function StatsPage() {
           </ul>
         </>
       )}
+
+      <PlayersPage embedded />
     </section>
   );
 }

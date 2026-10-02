@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { buildSessionDetails } from '../domain/standings';
 import { formatDate, formatNet, netClass } from '../lib/format';
+import { isWalletTable } from '../domain/wallet';
 
 export default function HistoryPage() {
   const { data, tableId, loading } = useData();
@@ -17,13 +18,17 @@ export default function HistoryPage() {
     data.results,
     tableId,
   );
+  const table = data.tables.find((candidate) => candidate.tableId === tableId);
 
   return (
     <section>
       <div className="section-head">
         <h1>History</h1>
-        <Link className="button small" to="/add">
-          + Add night
+        <Link
+          className="button small"
+          to={isWalletTable(table) ? '/live' : '/add'}
+        >
+          {isWalletTable(table) ? 'Start live' : '+ Add night'}
         </Link>
       </div>
 

@@ -7,7 +7,7 @@ import StatsPage from './routes/StatsPage';
 import SessionDetailPage from './routes/SessionDetailPage';
 import AddSessionPage from './routes/AddSessionPage';
 import LiveNightPage from './routes/LiveNightPage';
-import PlayersPage from './routes/PlayersPage';
+import WalletPage from './routes/WalletPage';
 import TableBar from './components/TableBar';
 
 function SetupNotice() {
@@ -15,13 +15,13 @@ function SetupNotice() {
     <div className="card setup">
       <h2>Almost there</h2>
       <p>
-        This app needs your Google Apps Script URL. Create a <code>.env</code>{' '}
-        file with:
+        This app needs its backend API URL. Create a <code>.env</code> file
+        with:
       </p>
-      <pre>VITE_API_URL=https://script.google.com/macros/s/XXXX/exec</pre>
+      <pre>VITE_API_URL=https://your-api.example.com/api/poker</pre>
       <p>
-        See <code>apps-script/README.md</code> for one-time setup steps, then
-        restart the dev server.
+        See <code>api/README.md</code> for setup steps, then restart the dev
+        server.
       </p>
     </div>
   );
@@ -32,7 +32,7 @@ const NAV = [
   { to: '/history', label: 'History', icon: '🗓️', end: false, primary: false },
   { to: '/add', label: 'Add', icon: '＋', end: false, primary: true },
   { to: '/stats', label: 'Stats', icon: '📊', end: false, primary: false },
-  { to: '/players', label: 'Players', icon: '👥', end: false, primary: false },
+  { to: '/wallet', label: 'Wallet', icon: '💰', end: false, primary: false },
 ];
 
 export default function App() {
@@ -41,9 +41,7 @@ export default function App() {
 
   const openSession =
     data && tableId
-      ? data.sessions.find(
-          (s) => s.tableId === tableId && s.status === 'open',
-        )
+      ? data.sessions.find((s) => s.tableId === tableId && s.status === 'open')
       : undefined;
 
   return (
@@ -58,7 +56,11 @@ export default function App() {
             type="button"
             className={`lock-btn ${unlocked ? 'unlocked' : ''}`}
             onClick={() => (unlocked ? lock() : void requireUnlock())}
-            title={unlocked ? 'Editing unlocked — tap to lock' : 'Locked — tap to enter PIN'}
+            title={
+              unlocked
+                ? 'Editing unlocked — tap to lock'
+                : 'Locked — tap to enter PIN'
+            }
           >
             {unlocked ? '🔓' : '🔒'}
           </button>
@@ -98,7 +100,11 @@ export default function App() {
               <Route path="/live" element={<LiveNightPage />} />
               <Route path="/live/:sessionId" element={<LiveNightPage />} />
               <Route path="/stats" element={<StatsPage />} />
-              <Route path="/players" element={<PlayersPage />} />
+              <Route path="/wallet" element={<WalletPage />} />
+              <Route
+                path="/players"
+                element={<Navigate to="/stats" replace />}
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </>

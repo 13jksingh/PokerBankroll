@@ -22,20 +22,33 @@ interface DataState {
   online: boolean;
   configured: boolean;
   tableId: string | null;
+  walletLoadedTables: ReadonlySet<string>;
   setTableId: (id: string) => void;
   refresh: () => Promise<void>;
+  refreshWallets: (tableId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataState | null>(null);
 
 function normalize(data: Bootstrap): Bootstrap {
-  return { ...data, buyIns: data.buyIns ?? [] };
+  return {
+    ...data,
+    buyIns: data.buyIns ?? [],
+    wallets: data.wallets ?? [],
+    walletTransactions: data.walletTransactions ?? [],
+  };
 }
 
 function loadCache(): Bootstrap | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? normalize(JSON.parse(raw) as Bootstrap) : null;
+    return raw
+      ? {
+          ...normalize(JSON.parse(raw) as Bootstrap),
+          wallets: [],
+          walletTransactions: [],
+        }
+      : null;
   } catch {
     return null;
   }
@@ -43,7 +56,10 @@ function loadCache(): Bootstrap | null {
 
 function saveCache(data: Bootstrap) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ ...data, wallets: [], walletTransactions: [] }),
+    );
   } catch {
     /* ignore quota errors */
   }
@@ -59,6 +75,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [fromCache, setFromCache] = useState<boolean>(false);
   const [online, setOnline] = useState<boolean>(
     typeof navigator === 'undefined' ? true : navigator.onLine,
+  );
+  const [walletLoadedTables, setWalletLoadedTables] = useState<Set<string>>(
+    () => new Set(),
   );
 
   const [tableId, setTableIdState] = useState<string | null>(() => {
@@ -85,7 +104,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const fresh = normalize(await api.bootstrap());
-      setData(fresh);
+      setData((current) => ({
+        ...fresh,
+        wallets: current?.wallets ?? [],
+        walletTransactions: current?.walletTransactions ?? [],
+      }));
       setFromCache(false);
       saveCache(fresh);
     } catch (e) {
@@ -99,6 +122,37 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, [configured]);
+
+  const refreshWallets = useCallback(
+    async (targetTableId: string) => {
+      if (!configured) return;
+      const walletData = await api.walletBootstrap(targetTableId);
+      setData((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          wallets: [
+            ...(current.wallets ?? []).filter(
+              (wallet) => wallet.tableId !== targetTableId,
+            ),
+            ...walletData.wallets,
+          ],
+          walletTransactions: [
+            ...(current.walletTransactions ?? []).filter(
+              (transaction) => transaction.tableId !== targetTableId,
+            ),
+            ...walletData.walletTransactions,
+          ],
+        };
+      });
+      setWalletLoadedTables((current) => {
+        const next = new Set(current);
+        next.add(targetTableId);
+        return next;
+      });
+    },
+    [configured],
+  );
 
   useEffect(() => {
     void refresh();
@@ -130,8 +184,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     online,
     configured,
     tableId,
+    walletLoadedTables,
     setTableId,
     refresh,
+    refreshWallets,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

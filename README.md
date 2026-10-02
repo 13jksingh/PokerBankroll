@@ -10,7 +10,9 @@ protected by a shared PIN. Data is served by a low-cost Azure Functions API back
 - 🗓️ **Session history** — every poker night with per-player results.
 - ➕ **Frictionless add** — pick players, type each net; the app enforces the night **balances to zero**.
 - 👤 **Guests → members** — a guest is auto-promoted to member after 5+ games.
-- 🃏 **Multiple tables** in one sheet — run more than one poker group from the same data.
+- 🃏 **Multiple tables** — run more than one poker group with isolated data.
+- 💰 **Optional chip wallets** — real-money top ups and cash outs, wallet-funded buy-ins, automatic
+  buy outs, organizer reserve, and an immutable transaction ledger.
 - 📱 **Installable PWA** — add to home screen; standings viewable offline.
 
 ## How it works
@@ -68,12 +70,14 @@ apps-script/   Legacy Google Apps Script backend retained for rollback
 spec/          requirements.md, design.md, tasks.md
 src/domain/    pure logic: standings + zero-sum validation (unit-tested)
 src/lib/       config, API client, data provider, formatting
-src/routes/    Standings, History, SessionDetail, AddSession, Players
+src/routes/    Standings, History, SessionDetail, AddSession, Stats, Wallet
 src/components/ TableBar, etc.
 ```
 
 ## Notes
 
 - Reads remain open; writes require the organizer PIN.
+- Wallet balances, money amounts, and transaction remarks also require the organizer PIN and are
+  never written to the offline browser cache.
 - The legacy Google Sheet is retained as a rollback snapshot but is no longer the production source
   of truth after the Azure cutover.

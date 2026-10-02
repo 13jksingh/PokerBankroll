@@ -5,7 +5,11 @@ import { useEditGate } from '../lib/editGate';
 import { isPinError } from '../lib/pin';
 import { computeStandings } from '../domain/standings';
 
-export default function PlayersPage() {
+export default function PlayersPage({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const { data, tableId, refresh, online } = useData();
   const { requireUnlock, lock } = useEditGate();
   const [newName, setNewName] = useState('');
@@ -59,8 +63,15 @@ export default function PlayersPage() {
   }
 
   return (
-    <section>
-      <h1>Players</h1>
+    <section className={embedded ? 'stats-player-management' : undefined}>
+      {embedded ? (
+        <>
+          <h2 className="stats-subhead">Manage players</h2>
+          <p className="hint">Add guests or rename existing players.</p>
+        </>
+      ) : (
+        <h1>Players</h1>
+      )}
 
       <div className="inline-form">
         <input

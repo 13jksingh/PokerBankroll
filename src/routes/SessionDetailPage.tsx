@@ -12,10 +12,12 @@ import {
   netClass,
   sessionToWhatsApp,
 } from '../lib/format';
+import { isWalletTable } from '../domain/wallet';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
-  const { data, tableId, refresh, online } = useData();
+  const { data, tableId, refresh, refreshWallets, walletLoadedTables, online } =
+    useData();
   const { requireUnlock, lock } = useEditGate();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -31,6 +33,8 @@ export default function SessionDetailPage() {
     tableId,
   );
   const session = sessions.find((s) => s.sessionId === sessionId);
+  const table = data.tables.find((candidate) => candidate.tableId === tableId);
+  const walletEnabled = isWalletTable(table);
 
   if (session && session.status === 'open') {
     navigate(`/live/${session.sessionId}`, { replace: true });
@@ -62,16 +66,48 @@ export default function SessionDetailPage() {
   const hasBuyIns = buyInSummaries.length > 0;
 
   async function remove() {
-    if (!confirm('Delete this session? This cannot be undone.')) return;
+    const prompt = walletEnabled
+      ? 'Delete this session and reverse its wallet entries? This cannot be undone.'
+      : 'Delete this session? This cannot be undone.';
+    if (!confirm(prompt)) return;
     if (!(await requireUnlock())) return;
     setBusy(true);
     setErr(null);
     try {
       await api.deleteSession(tableId!, session!.sessionId);
       await refresh();
+      if (walletEnabled && walletLoadedTables.has(tableId!)) {
+        await refreshWallets(tableId!);
+      }
       navigate('/history');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to delete.';
+      if (isPinError(msg)) lock();
+      setErr(msg);
+      setBusy(false);
+    }
+  }
+
+  async function reopen() {
+    if (
+      !confirm(
+        'Reopen this session? Its buy-out credits will be reversed until you close it again.',
+      )
+    ) {
+      return;
+    }
+    if (!(await requireUnlock())) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.reopenSession(tableId!, session!.sessionId);
+      await refresh();
+      if (walletLoadedTables.has(tableId!)) {
+        await refreshWallets(tableId!);
+      }
+      navigate(`/live/${session!.sessionId}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to reopen.';
       if (isPinError(msg)) lock();
       setErr(msg);
       setBusy(false);
@@ -151,7 +187,7 @@ export default function SessionDetailPage() {
 
       {hasBuyIns && (
         <div className="buyin-breakdown">
-          <h2>Buy-ins</h2>
+          <h2>{walletEnabled ? 'Wallet settlement' : 'Buy-ins'}</h2>
           <ul className="buyin-detail-list">
             {buyInSummaries.map((s) => (
               <li key={s.playerId} className="buyin-detail-row">
@@ -159,7 +195,9 @@ export default function SessionDetailPage() {
                 <span className="muted">
                   {s.count}× · {s.totalBuyIn} in
                 </span>
-                <span className="muted">{chipsByPlayer.get(s.playerId) ?? 0} out</span>
+                <span className="muted">
+                  {chipsByPlayer.get(s.playerId) ?? 0} out
+                </span>
               </li>
             ))}
           </ul>
@@ -167,9 +205,21 @@ export default function SessionDetailPage() {
       )}
 
       <div className="row-actions">
-        <Link className="button small" to={`/add?edit=${session.sessionId}`}>
-          Edit
-        </Link>
+        {walletEnabled && (
+          <button
+            className="button small"
+            type="button"
+            onClick={reopen}
+            disabled={busy || !online}
+          >
+            Reopen
+          </button>
+        )}
+        {!walletEnabled && (
+          <Link className="button small" to={`/add?edit=${session.sessionId}`}>
+            Edit
+          </Link>
+        )}
         <button
           className="danger small"
           onClick={remove}

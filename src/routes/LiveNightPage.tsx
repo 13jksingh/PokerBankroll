@@ -1,23 +1,77 @@
-import { useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useData } from '../lib/useData';
 import { api } from '../lib/api';
 import { useEditGate } from '../lib/editGate';
 import { isPinError } from '../lib/pin';
-import {
-  buildBuyInSummaries,
-  computeSettlement,
-} from '../domain/buyins';
+import { buildBuyInSummaries, computeSettlement } from '../domain/buyins';
 import { todayIso, formatNet, netClass } from '../lib/format';
+import { formatChips, isWalletTable, walletBalance } from '../domain/wallet';
 
 const DEFAULT_BUYIN = 1000;
 
 export default function LiveNightPage() {
   const { sessionId } = useParams();
-  const { data, tableId } = useData();
+  const { data, tableId, refreshWallets, walletLoadedTables } = useData();
+  const { unlocked, requireUnlock, lock } = useEditGate();
+  const [loadingWallets, setLoadingWallets] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const table = data?.tables.find((candidate) => candidate.tableId === tableId);
+  const walletEnabled = isWalletTable(table);
+  const walletLoaded = Boolean(tableId && walletLoadedTables.has(tableId));
+
+  useEffect(() => {
+    if (
+      !tableId ||
+      !walletEnabled ||
+      !unlocked ||
+      walletLoaded ||
+      loadingWallets
+    ) {
+      return;
+    }
+    setLoadingWallets(true);
+    void refreshWallets(tableId)
+      .catch((caught) => {
+        const message =
+          caught instanceof Error ? caught.message : 'Failed to load wallets.';
+        if (isPinError(message)) lock();
+        setWalletError(message);
+      })
+      .finally(() => setLoadingWallets(false));
+  }, [
+    tableId,
+    walletEnabled,
+    unlocked,
+    walletLoaded,
+    loadingWallets,
+    refreshWallets,
+    lock,
+  ]);
 
   if (!data || !tableId) {
     return <p className="muted">Select a table first.</p>;
+  }
+
+  if (walletEnabled && (!unlocked || !walletLoaded)) {
+    return (
+      <section>
+        <h1>Live night</h1>
+        <div className="empty">
+          <p className="empty-emoji">🔒</p>
+          <p>Unlock organizer access to use player wallets.</p>
+          <button
+            className="button"
+            type="button"
+            disabled={loadingWallets}
+            onClick={() => void requireUnlock()}
+          >
+            {loadingWallets ? 'Loading…' : 'Unlock live table'}
+          </button>
+          {walletError && <p className="error">{walletError}</p>}
+        </div>
+      </section>
+    );
   }
 
   return sessionId ? (
@@ -32,7 +86,7 @@ export default function LiveNightPage() {
 /* ------------------------------------------------------------------ */
 
 function StartLive() {
-  const { data, tableId, refresh, online } = useData();
+  const { data, tableId, refresh, refreshWallets, online } = useData();
   const { requireUnlock, lock } = useEditGate();
   const navigate = useNavigate();
 
@@ -40,6 +94,9 @@ function StartLive() {
     () => (data ? data.players.filter((p) => p.tableId === tableId) : []),
     [data, tableId],
   );
+  const table = data?.tables.find((candidate) => candidate.tableId === tableId);
+  const walletEnabled = isWalletTable(table);
+  const defaultBuyIn = table?.defaultBuyIn ?? DEFAULT_BUYIN;
 
   const [date, setDate] = useState(todayIso());
   const [location, setLocation] = useState('');
@@ -49,6 +106,7 @@ function StartLive() {
   const [newGuest, setNewGuest] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [operationId] = useState(() => crypto.randomUUID());
 
   const pickedIds = Object.keys(picked);
   const nameOf = (id: string) =>
@@ -58,7 +116,7 @@ function StartLive() {
     setPicked((prev) => {
       const next = { ...prev };
       if (playerId in next) delete next[playerId];
-      else next[playerId] = String(DEFAULT_BUYIN);
+      else next[playerId] = String(defaultBuyIn);
       return next;
     });
   }
@@ -73,7 +131,7 @@ function StartLive() {
       const { playerId } = await api.addPlayer(tableId!, name);
       await refresh();
       setNewGuest('');
-      setPicked((prev) => ({ ...prev, [playerId]: String(DEFAULT_BUYIN) }));
+      setPicked((prev) => ({ ...prev, [playerId]: String(defaultBuyIn) }));
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to add guest.';
       if (isPinError(msg)) lock();
@@ -90,16 +148,18 @@ function StartLive() {
     setErr(null);
     try {
       const { sessionId } = await api.startSession({
+        operationId,
         tableId: tableId!,
         date,
         location,
         notes: '',
         players: pickedIds.map((id) => ({
           playerId: id,
-          amount: Number(picked[id]) || DEFAULT_BUYIN,
+          amount: Number(picked[id]) || defaultBuyIn,
         })),
       });
       await refresh();
+      if (walletEnabled) await refreshWallets(tableId!);
       navigate(`/live/${sessionId}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to start night.';
@@ -109,11 +169,21 @@ function StartLive() {
     }
   }
 
+  const insufficientIds = walletEnabled
+    ? pickedIds.filter(
+        (id) =>
+          walletBalance(data!.wallets, tableId!, id) <
+          (Number(picked[id]) || 0),
+      )
+    : [];
+
   return (
     <section className="add-page">
       <h1>Start live night</h1>
       <p className="hint">
-        Pick who’s in, set their starting buy-in, then track re-buys live.
+        {walletEnabled
+          ? 'Pick who’s in. Starting buy-ins are deducted from player wallets.'
+          : 'Pick who’s in, set their starting buy-in, then track re-buys live.'}
       </p>
 
       <div className="date-row">
@@ -154,7 +224,14 @@ function StartLive() {
             className={`chip ${p.playerId in picked ? 'on' : ''}`}
             onClick={() => toggle(p.playerId)}
           >
-            {p.name}
+            <span>{p.name}</span>
+            {walletEnabled && (
+              <small>
+                {formatChips(
+                  walletBalance(data!.wallets, tableId!, p.playerId),
+                )}
+              </small>
+            )}
           </button>
         ))}
         {players.length === 0 && (
@@ -187,7 +264,15 @@ function StartLive() {
           <div className="result-rows">
             {pickedIds.map((id) => (
               <div className="buyin-row" key={id}>
-                <span className="result-name">{nameOf(id)}</span>
+                <span className="result-name">
+                  {nameOf(id)}
+                  {walletEnabled && (
+                    <small className="wallet-inline-balance">
+                      Wallet{' '}
+                      {formatChips(walletBalance(data!.wallets, tableId!, id))}
+                    </small>
+                  )}
+                </span>
                 <input
                   className="net-input"
                   type="number"
@@ -211,6 +296,21 @@ function StartLive() {
         </>
       )}
 
+      {insufficientIds.length > 0 && (
+        <div className="session-insufficient">
+          <div>
+            <b>Insufficient wallet balance</b>
+            <span>
+              {insufficientIds.map(nameOf).join(', ')} must be topped up before
+              starting.
+            </span>
+          </div>
+          <Link className="ghost button small" to="/wallet">
+            Open Wallet
+          </Link>
+        </div>
+      )}
+
       {err && <p className="error">{err}</p>}
 
       <div className="sticky-actions">
@@ -220,7 +320,12 @@ function StartLive() {
         <button
           className="button primary"
           onClick={start}
-          disabled={pickedIds.length < 2 || busy || !online}
+          disabled={
+            pickedIds.length < 2 ||
+            insufficientIds.length > 0 ||
+            busy ||
+            !online
+          }
         >
           {busy ? 'Starting…' : 'Start night'}
         </button>
@@ -234,7 +339,7 @@ function StartLive() {
 /* ------------------------------------------------------------------ */
 
 function ManageLive({ sessionId }: { sessionId: string }) {
-  const { data, tableId, refresh, online } = useData();
+  const { data, tableId, refresh, refreshWallets, online } = useData();
   const { requireUnlock, lock } = useEditGate();
   const navigate = useNavigate();
 
@@ -244,13 +349,20 @@ function ManageLive({ sessionId }: { sessionId: string }) {
   const [addFor, setAddFor] = useState<string | null>(null);
   const [addAmount, setAddAmount] = useState(String(DEFAULT_BUYIN));
   const [addRemark, setAddRemark] = useState('');
+  const [addOperationId, setAddOperationId] = useState('');
   const [joinPick, setJoinPick] = useState('');
+  const [joinOperationId, setJoinOperationId] = useState(() =>
+    crypto.randomUUID(),
+  );
   const [cashing, setCashing] = useState(false);
   const [chips, setChips] = useState<Record<string, string>>({});
 
   const session = data!.sessions.find(
     (s) => s.sessionId === sessionId && s.tableId === tableId,
   );
+  const table = data!.tables.find((candidate) => candidate.tableId === tableId);
+  const walletEnabled = isWalletTable(table);
+  const defaultBuyIn = table?.defaultBuyIn ?? DEFAULT_BUYIN;
 
   const summaries = useMemo(
     () => buildBuyInSummaries(data!.buyIns, data!.players, sessionId),
@@ -291,8 +403,9 @@ function ManageLive({ sessionId }: { sessionId: string }) {
 
   function openAdd(playerId: string) {
     setAddFor(playerId);
-    setAddAmount(String(DEFAULT_BUYIN));
+    setAddAmount(String(defaultBuyIn));
     setAddRemark('');
+    setAddOperationId(crypto.randomUUID());
   }
 
   async function submitBuyIn() {
@@ -303,8 +416,16 @@ function ManageLive({ sessionId }: { sessionId: string }) {
     setBusy(true);
     setErr(null);
     try {
-      await api.addBuyIn(tableId!, sessionId, addFor, amount, addRemark.trim());
+      await api.addBuyIn(
+        addOperationId,
+        tableId!,
+        sessionId,
+        addFor,
+        amount,
+        addRemark.trim(),
+      );
       await refresh();
+      if (walletEnabled) await refreshWallets(tableId!);
       setAddFor(null);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to add buy-in.';
@@ -321,9 +442,18 @@ function ManageLive({ sessionId }: { sessionId: string }) {
     setBusy(true);
     setErr(null);
     try {
-      await api.addBuyIn(tableId!, sessionId, joinPick, DEFAULT_BUYIN, '');
+      await api.addBuyIn(
+        joinOperationId,
+        tableId!,
+        sessionId,
+        joinPick,
+        defaultBuyIn,
+        '',
+      );
       await refresh();
+      if (walletEnabled) await refreshWallets(tableId!);
       setJoinPick('');
+      setJoinOperationId(crypto.randomUUID());
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to add player.';
       if (isPinError(msg)) lock();
@@ -340,6 +470,7 @@ function ManageLive({ sessionId }: { sessionId: string }) {
     try {
       await api.deleteBuyIn(buyInId);
       await refresh();
+      if (walletEnabled) await refreshWallets(tableId!);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to remove buy-in.';
       if (isPinError(msg)) lock();
@@ -372,6 +503,7 @@ function ManageLive({ sessionId }: { sessionId: string }) {
         })),
       });
       await refresh();
+      if (walletEnabled) await refreshWallets(tableId!);
       navigate(`/history/${sessionId}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to close night.';
@@ -421,6 +553,16 @@ function ManageLive({ sessionId }: { sessionId: string }) {
                   <span className="buyin-name">{s.name}</span>
                   <span className="buyin-total">{s.totalBuyIn}</span>
                 </div>
+                {walletEnabled && (
+                  <div className="live-wallet-balance">
+                    Wallet available:{' '}
+                    <b>
+                      {formatChips(
+                        walletBalance(data!.wallets, tableId!, s.playerId),
+                      )}
+                    </b>
+                  </div>
+                )}
                 <div className="buyin-sub">
                   {s.count} buy-in{s.count > 1 ? 's' : ''}
                   {s.entries.map((b) => (
@@ -458,7 +600,13 @@ function ManageLive({ sessionId }: { sessionId: string }) {
                       className="button small"
                       type="button"
                       onClick={submitBuyIn}
-                      disabled={busy || !online}
+                      disabled={
+                        busy ||
+                        !online ||
+                        (walletEnabled &&
+                          (Number(addAmount) || 0) >
+                            walletBalance(data!.wallets, tableId!, s.playerId))
+                      }
                     >
                       Add
                     </button>
@@ -480,6 +628,15 @@ function ManageLive({ sessionId }: { sessionId: string }) {
                     + Buy-in
                   </button>
                 )}
+                {walletEnabled &&
+                  addFor === s.playerId &&
+                  (Number(addAmount) || 0) >
+                    walletBalance(data!.wallets, tableId!, s.playerId) && (
+                    <p className="error">
+                      Insufficient wallet balance.{' '}
+                      <Link to="/wallet">Top up in Wallet</Link>
+                    </p>
+                  )}
               </li>
             ))}
           </ul>
@@ -488,7 +645,10 @@ function ManageLive({ sessionId }: { sessionId: string }) {
             <div className="inline-form join-row">
               <select
                 value={joinPick}
-                onChange={(e) => setJoinPick(e.target.value)}
+                onChange={(e) => {
+                  setJoinPick(e.target.value);
+                  setJoinOperationId(crypto.randomUUID());
+                }}
                 aria-label="Add a player"
               >
                 <option value="">+ Add a player…</option>
@@ -502,12 +662,28 @@ function ManageLive({ sessionId }: { sessionId: string }) {
                 className="ghost"
                 type="button"
                 onClick={joinPlayer}
-                disabled={!joinPick || busy || !online}
+                disabled={
+                  !joinPick ||
+                  busy ||
+                  !online ||
+                  (walletEnabled &&
+                    walletBalance(data!.wallets, tableId!, joinPick) <
+                      defaultBuyIn)
+                }
               >
                 Join
               </button>
             </div>
           )}
+
+          {walletEnabled &&
+            joinPick &&
+            walletBalance(data!.wallets, tableId!, joinPick) < defaultBuyIn && (
+              <p className="error">
+                This player needs a wallet top up before joining.{' '}
+                <Link to="/wallet">Open Wallet</Link>
+              </p>
+            )}
 
           {err && <p className="error">{err}</p>}
 
@@ -531,8 +707,9 @@ function ManageLive({ sessionId }: { sessionId: string }) {
         <>
           <h2>Cash out</h2>
           <p className="hint">
-            Enter each player’s final chip count. Totals must match the{' '}
-            {totalPot} on the table.
+            {walletEnabled
+              ? `Enter each player’s final chips. Closing credits these chips back to their wallets. Totals must match the ${totalPot} on the table.`
+              : `Enter each player’s final chip count. Totals must match the ${totalPot} on the table.`}
           </p>
           <div className="result-rows">
             {summaries.map((s) => {
@@ -605,7 +782,11 @@ function ManageLive({ sessionId }: { sessionId: string }) {
               onClick={closeNight}
               disabled={!settlement.balanced || busy || !online}
             >
-              {busy ? 'Closing…' : 'Close & save'}
+              {busy
+                ? 'Closing…'
+                : walletEnabled
+                  ? 'Buy out & close'
+                  : 'Close & save'}
             </button>
           </div>
         </>
